@@ -1,7 +1,10 @@
 package com.ml.mutant.domain;
 
+import com.ml.mutant.converter.DnaConverter;
 import lombok.Data;
 
+import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -10,17 +13,21 @@ import javax.persistence.Table;
 import java.util.Arrays;
 import java.util.Objects;
 
-@Entity
 @Data
+@Entity
 @Table(name = "mutant")
 public class Mutant {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "mutant_id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "dna")
+    @Convert(converter = DnaConverter.class)
     private String[] dna;
 
+    @Column(name = "is_mutant")
     private boolean isMutant;
 
     @Override
@@ -46,4 +53,5 @@ public class Mutant {
                 ", isMutant=" + isMutant +
                 '}';
     }
+
 }

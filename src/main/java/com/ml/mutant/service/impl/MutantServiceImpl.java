@@ -1,6 +1,7 @@
 package com.ml.mutant.service.impl;
 
 import com.ml.mutant.domain.Mutant;
+import com.ml.mutant.domain.Stats;
 import com.ml.mutant.repository.MutantRepository;
 import com.ml.mutant.service.MutantService;
 import com.ml.mutant.helper.MutantHelper;
@@ -35,6 +36,11 @@ public class MutantServiceImpl implements MutantService {
     @Override
     public Mutant existsMutantByDna(String[] dna) {
         return mutantRepository.findByDna(dna);
+    }
+
+    @Override
+    public Stats getMutantStats() {
+        return null;
     }
 
     private boolean isMutant(char[][] dnaMatrix) {

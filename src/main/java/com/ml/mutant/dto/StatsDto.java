@@ -10,4 +10,5 @@ public class StatsDto {
     private int countHumanDna;
 
     private double ratio;
+
 }
