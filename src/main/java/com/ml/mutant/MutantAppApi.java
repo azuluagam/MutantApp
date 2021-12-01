@@ -9,4 +9,5 @@ public class MutantAppApi {
     public static void main(String[] args) {
         SpringApplication.run(MutantAppApi.class, args);
     }
+
 }

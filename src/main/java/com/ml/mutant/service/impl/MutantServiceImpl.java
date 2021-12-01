@@ -8,6 +8,8 @@ import com.ml.mutant.helper.MutantHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class MutantServiceImpl implements MutantService {
 
@@ -20,13 +22,13 @@ public class MutantServiceImpl implements MutantService {
 
     @Override
     public boolean isMutant(String[] dna) {
-        Mutant mutant = existsMutantByDna(dna);
-        if (mutant != null) {
-            return mutant.isMutant();
+        Optional<Mutant> optionalMutant = existsMutantByDna(dna);
+        if (optionalMutant.isPresent()) {
+            return optionalMutant.get().isMutant();
         }
         char[][] dnaMatrix = MutantHelper.createDnaMatrix(dna);
         boolean isMutant = isMutant(dnaMatrix);
-        mutant = new Mutant();
+        Mutant mutant = new Mutant();
         mutant.setMutant(isMutant);
         mutant.setDna(dna);
         mutantRepository.save(mutant);
@@ -34,13 +36,18 @@ public class MutantServiceImpl implements MutantService {
     }
 
     @Override
-    public Mutant existsMutantByDna(String[] dna) {
+    public Optional<Mutant> existsMutantByDna(String[] dna) {
         return mutantRepository.findByDna(dna);
     }
 
     @Override
     public Stats getMutantStats() {
-        return null;
+        long mutantCount = mutantRepository.countByIsMutant(true);
+        long humanCount = mutantRepository.countByIsMutant(false);
+        Stats stats = new Stats();
+        stats.setCountHumanDna(humanCount);
+        stats.setCountMutantDna(mutantCount);
+        return stats;
     }
 
     private boolean isMutant(char[][] dnaMatrix) {

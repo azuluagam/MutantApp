@@ -5,9 +5,9 @@ import lombok.Data;
 @Data
 public class Stats {
 
-    private int countMutantDna;
+    private long countMutantDna;
 
-    private int countHumanDna;
+    private long countHumanDna;
 
     public double getRatio () {
         return (double) countMutantDna/countHumanDna;

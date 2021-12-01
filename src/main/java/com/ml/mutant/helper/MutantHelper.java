@@ -13,9 +13,7 @@ public class MutantHelper {
         for (int i = 0; i < dnaChain.length; i++) {
             String dna = dnaChain[i];
             char[] dnaArray = dna.toCharArray();
-            for (int j = 0; j < dnaArray.length; j++) {
-                dnaMatrix[i][j] = dnaArray[j];
-            }
+            System.arraycopy(dnaArray, 0, dnaMatrix[i], 0, dnaArray.length);
         }
         return dnaMatrix;
     }
@@ -61,4 +59,5 @@ public class MutantHelper {
         }
         return false;
     }
+
 }

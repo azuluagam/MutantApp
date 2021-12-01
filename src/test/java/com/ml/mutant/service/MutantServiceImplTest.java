@@ -1,6 +1,7 @@
 package com.ml.mutant.service;
 
 import com.ml.mutant.domain.Mutant;
+import com.ml.mutant.domain.Stats;
 import com.ml.mutant.repository.MutantRepository;
 import com.ml.mutant.service.impl.MutantServiceImpl;
 import org.junit.Before;
@@ -10,12 +11,15 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.Optional;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -48,17 +52,15 @@ public class MutantServiceImplTest {
                 "CCCCTA",
                 "TCACTG"};
 
-        given(mutantRepository.findByDna(dnaArray)).willReturn(null);
+        given(mutantRepository.findByDna(dnaArray)).willReturn(Optional.empty());
 
         //When
         boolean result = mutantService.isMutant(dnaArray);
 
         //Then
-
+        assertTrue(result);
         verify(mutantRepository, times(1)).save(mutantArgumentCaptor.capture());
         assertThat(mutantArgumentCaptor.getValue().getDna()).isEqualTo(dnaArray);
-        assertTrue(result);
-
     }
 
     @Test
@@ -72,16 +74,15 @@ public class MutantServiceImplTest {
                 "CCCCTA",
                 "TCACTG"};
 
-        given(mutantRepository.findByDna(dnaArray)).willReturn(null);
+        given(mutantRepository.findByDna(dnaArray)).willReturn(Optional.empty());
 
         //When
         boolean result = mutantService.isMutant(dnaArray);
 
         //Then
-
+        assertFalse(result);
         verify(mutantRepository, times(1)).save(mutantArgumentCaptor.capture());
         assertThat(mutantArgumentCaptor.getValue().getDna()).isEqualTo(dnaArray);
-        assertFalse(result);
     }
 
     @Test
@@ -99,15 +100,14 @@ public class MutantServiceImplTest {
         mutant.setDna(dnaArray);
         mutant.setMutant(false);
 
-        given(mutantRepository.findByDna(dnaArray)).willReturn(mutant);
+        given(mutantRepository.findByDna(dnaArray)).willReturn(Optional.of(mutant));
 
         //When
         boolean result = mutantService.isMutant(dnaArray);
 
         //Then
-
-        verify(mutantRepository, times(0)).save(any());
         assertFalse(result);
+        verify(mutantRepository, times(0)).save(any());
     }
 
     @Test
@@ -119,15 +119,16 @@ public class MutantServiceImplTest {
         mutant.setDna(dnaArray);
         mutant.setMutant(false);
 
-        given(mutantRepository.findByDna(dnaArray)).willReturn(mutant);
+        given(mutantRepository.findByDna(dnaArray)).willReturn(Optional.of(mutant));
 
         //When
-        Mutant searched = mutantService.existsMutantByDna(dnaArray);
+        Optional<Mutant> searched = mutantService.existsMutantByDna(dnaArray);
 
         //Then
-        assertEquals(1L, searched.getId());
-        assertFalse(searched.isMutant());
-        assertEquals(dnaArray, searched.getDna());
+        assertTrue(searched.isPresent());
+        assertEquals(1L, searched.get().getId());
+        assertFalse(searched.get().isMutant());
+        assertEquals(dnaArray, searched.get().getDna());
         verify(mutantRepository, times(1)).findByDna(dnaArray);
     }
 
@@ -136,18 +137,31 @@ public class MutantServiceImplTest {
         //Given
         String[] dnaArray = {"TGGAC", "AAGGTT"};
 
-        given(mutantRepository.findByDna(dnaArray)).willReturn(null);
+        given(mutantRepository.findByDna(dnaArray)).willReturn(Optional.empty());
 
         //When
-        Mutant searched = mutantService.existsMutantByDna(dnaArray);
+        Optional<Mutant> searched = mutantService.existsMutantByDna(dnaArray);
 
         //Then
-        assertNull(searched);
+        assertFalse(searched.isPresent());
         verify(mutantRepository, times(1)).findByDna(dnaArray);
     }
 
     @Test
     public void test_getMutantStats() {
+        //Given
+        given(mutantRepository.countByIsMutant(true)).willReturn(40L);
+        given(mutantRepository.countByIsMutant(false)).willReturn(100L);
 
+        //When
+        Stats stats = mutantService.getMutantStats();
+
+        //Then
+        assertNotNull(stats);
+        assertEquals(40L, stats.getCountMutantDna());
+        assertEquals(100L, stats.getCountHumanDna());
+        assertEquals(0.4D, stats.getRatio());
+        verify(mutantRepository, times(2)).countByIsMutant(anyBoolean());
     }
+
 }

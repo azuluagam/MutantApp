@@ -17,7 +17,7 @@ import org.springframework.web.servlet.view.json.MappingJackson2JsonView;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.atMost;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
@@ -61,7 +61,7 @@ public class MutantControllerTest {
 
         //Then
         assertEquals(HttpStatus.OK.value(), result.getResponse().getStatus());
-        verify(mutantService, atMost(1)).isMutant(dnaChainArray);
+        verify(mutantService, times(1)).isMutant(dnaChainArray);
     }
 
     @Test
@@ -82,7 +82,7 @@ public class MutantControllerTest {
 
         //Then
         assertEquals(HttpStatus.FORBIDDEN.value(), result.getResponse().getStatus());
-        verify(mutantService, atMost(1)).isMutant(dnaChainArray);
+        verify(mutantService, times(1)).isMutant(dnaChainArray);
     }
 
 }

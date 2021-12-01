@@ -1,26 +1,31 @@
-package com.ml.mutant.config;
+package com.ml.mutant.repository;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.apache.tomcat.jdbc.pool.DataSource;
-import org.apache.tomcat.jdbc.pool.PoolProperties;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.flyway.FlywayMigrationStrategy;
+import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.annotation.Scope;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
-import org.springframework.orm.jpa.vendor.Database;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.web.client.RestTemplate;
 
+import javax.sql.DataSource;
 import java.util.HashMap;
 
-@Configuration
-@PropertySource(value={"classpath:application.properties"})
-public class JpaConfig {
+import static org.mockito.Mockito.mock;
 
-    @Value("${spring.flyway.db.clean:false}")
+@Configuration
+@EnableAutoConfiguration
+@EnableTransactionManagement
+public class MutantAppDbTestConfig {
+
+    @Value("${flyway.db.clean:false}")
     private boolean flywayClean;
 
     @Value("${spring.jpa.hibernate.ddl-auto:none}")
@@ -41,15 +46,6 @@ public class JpaConfig {
     @Value("${spring.datasource.dialect}")
     private String dialect;
 
-    @Value("${hibernate.jdbc.batch_size}")
-    private String batchSize;
-
-    @Value("${hibernate.jdbc.order_inserts}")
-    private Boolean orderInserts;
-
-    @Value("${hibernate.jdbc.order_updates}")
-    private Boolean orderUpdates;
-
     @Bean
     public FlywayMigrationStrategy flywayMigrationStrategy() {
         return flyway -> {
@@ -61,36 +57,36 @@ public class JpaConfig {
     }
 
     @Bean
+    @Scope(value = "prototype")
+    RestTemplate restTemplate() {
+        return mock(RestTemplate.class);
+    }
+
+    @Bean
     @Primary
     public LocalContainerEntityManagerFactoryBean entityManagerFactory() {
-        LocalContainerEntityManagerFactoryBean entityManagerFactory = new LocalContainerEntityManagerFactoryBean();
-        entityManagerFactory.setDataSource(dataSource());
-        entityManagerFactory.setPackagesToScan("com.ml.mutant.domain");
+        LocalContainerEntityManagerFactoryBean entityManager = new LocalContainerEntityManagerFactoryBean();
+        entityManager.setDataSource(dataSource());
+        entityManager.setPackagesToScan("com.ml.mutant.domain");
         HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
-        vendorAdapter.setDatabase(Database.MYSQL);
-        entityManagerFactory.setJpaVendorAdapter(vendorAdapter);
+        entityManager.setJpaVendorAdapter(vendorAdapter);
         HashMap<String, Object> properties = new HashMap<>();
         properties.put("hibernate.dialect", dialect);
         properties.put("hibernate.hbm2ddl.auto", ddlAuto);
-        properties.put("hibernate.jdbc.batch_size", batchSize);
-        properties.put("hibernate.jdbc.order_inserts", orderInserts);
-        properties.put("hibernate.jdbc.order_updates", orderUpdates);
-        entityManagerFactory.setJpaPropertyMap(properties);
-        entityManagerFactory.setPersistenceUnitName("ml.mutant");
-        return entityManagerFactory;
+        entityManager.setJpaPropertyMap(properties);
+        entityManager.setPersistenceUnitName("ml.mutant");
+        return entityManager;
     }
 
     @Bean
     @Primary
     public DataSource dataSource() {
-        PoolProperties poolProperties = new PoolProperties();
-        poolProperties.setUrl(url);
-        poolProperties.setUsername(username);
-        poolProperties.setPassword(password);
-        poolProperties.setDriverClassName(driverClassName);
-        poolProperties.setTestOnBorrow(true);
-        poolProperties.setValidationQuery("SELECT 1");
-        return new DataSource(poolProperties);
+        return DataSourceBuilder.create()
+                .driverClassName(driverClassName)
+                .url(url)
+                .username(username)
+                .password(password)
+                .build();
     }
 
     @Bean

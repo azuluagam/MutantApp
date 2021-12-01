@@ -17,7 +17,7 @@ import org.springframework.web.servlet.view.json.MappingJackson2JsonView;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.atMost;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
@@ -66,7 +66,7 @@ public class StatsControllerTest {
         assertEquals(stats.getCountMutantDna(), statsDto.getCountMutantDna());
         assertEquals(stats.getRatio(), statsDto.getRatio());
         assertEquals(0.4D, statsDto.getRatio());
-        verify(mutantService, atMost(1)).getMutantStats();
+        verify(mutantService, times(1)).getMutantStats();
     }
 
 }
