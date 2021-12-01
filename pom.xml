@@ -15,6 +15,7 @@
         <junit.version>4.13.2</junit.version>
         <lombok.version>1.18.22</lombok.version>
         <javax.persistence.version>1.0.0.Final</javax.persistence.version>
+        <flyway.version>8.2.0</flyway.version>
     </properties>
 
     <parent>
@@ -49,7 +50,8 @@
         </dependency>
         <dependency>
             <groupId>org.flywaydb</groupId>
-            <artifactId>flyway-core</artifactId>
+            <artifactId>flyway-maven-plugin</artifactId>
+            <version>${flyway.version}</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
